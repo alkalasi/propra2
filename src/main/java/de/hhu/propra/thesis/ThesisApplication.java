@@ -7,6 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ThesisApplication {
 
+  /**
+   * Startet die Spring-Boot-Anwendung.
+   *
+   * @param args Kommandozeilenargumente
+   */
   public static void main(String[] args) {
     SpringApplication.run(ThesisApplication.class, args);
   }
