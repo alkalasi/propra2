@@ -1,0 +1,89 @@
+plugins {
+  id 'java'
+  id 'org.springframework.boot' version '4.1.2'
+  id 'io.spring.dependency-management' version '1.1.7'
+  id 'checkstyle'
+  id 'jacoco'
+  id 'com.github.spotbugs' version '6.5.13'
+  id 'info.solidsoft.pitest' version '1.19.0'
+}
+
+group = 'de.hhu.propra'
+version = '0.0.1-SNAPSHOT'
+description = 'Thesis is coming! - Betreuung fuer Abschlussarbeiten finden'
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+// Die Versionen aus Spring Boot gelten, auch wenn eine Bibliothek (z. B. ArchUnit)
+// in ihrer POM aeltere JUnit-Versionen vorgibt.
+dependencyManagement {
+  overriddenByDependencies = false
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+  implementation 'org.springframework.boot:spring-boot-starter-validation'
+  implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+  testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+  testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+  testImplementation 'com.tngtech.archunit:archunit-junit5:1.5.1'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+  useJUnitPlatform()
+  finalizedBy tasks.named('jacocoTestReport')
+}
+
+// Code-Stil: Google Java Style. Jede Warnung laesst den Build fehlschlagen.
+checkstyle {
+  toolVersion = '14.4.0'
+  configFile = file('config/checkstyle/google_checks.xml')
+  maxWarnings = 0
+}
+
+// Testabdeckung (inkl. Branch-Abdeckung) als HTML-Report unter build/reports/jacoco
+jacoco {
+  toolVersion = '0.8.16'
+}
+
+tasks.named('jacocoTestReport') {
+  reports {
+    xml.required = true
+    html.required = true
+  }
+}
+
+// Statische Analyse. Gefundene Probleme lassen den Build fehlschlagen.
+spotbugs {
+  toolVersion = '4.10.5'
+  ignoreFailures = false
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+  reports {
+    html {
+      required = true
+    }
+  }
+}
+
+// Mutationstests: ./gradlew pitest, Report unter build/reports/pitest
+pitest {
+  pitestVersion = '1.30.2'
+  junit5PluginVersion = '1.2.3'
+  targetClasses = ['de.hhu.propra.thesis.*']
+  excludedClasses = ['de.hhu.propra.thesis.ThesisApplication']
+  threads = 4
+  outputFormats = ['HTML']
+  timestampedReports = false
+}
